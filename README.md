@@ -1,14 +1,14 @@
 # GuruTime
 
-GuruTime, macOS menü çubuğunda yaşayan, görevleri alarm ve hatırlatıcılara dönüştüren açık kaynak bir üretkenlik uygulamasıdır. Önceliği yerel çalışmak, hızlı erişim ve veriyi kullanıcının Mac'inde tutmaktır.
+GuruTime, macOS menü çubuğunda yaşayan, görevleri alarm ve hatırlatıcılara dönüştüren açık kaynak bir üretkenlik uygulamasıdır. İnternet bağlantısı gerektirmeden çalışır, veriyi Mac'inizde tutar ve menü çubuğundan aşağı doğru çekilen görsel halatla birkaç saniyede alarm oluşturur.
 
-![GuruTime uygulama ekranı](docs/images/gurutime-uygulama.png)
+![GuruTime görevler ekranı](docs/images/gurutime-gorevler.png)
 
 ## Neler sunuyor?
 
 - Görevleri **Önemli**, **Bugün** ve **Bir Ara** başlıklarında düzenleme
 - Her görev için dakikalar içinde alarm kurma
-- Menü çubuğundan hızlı erişim ve görsel zamanlayıcı
+- Menü çubuğundan aşağı çekilen halatla görsel zamanlayıcı
 - Tamamlanan görevleri arşivleme ve geri getirme
 - İsteğe bağlı yerel parola kilidi
 - Aynı ağdaki telefondan, tek kullanımlık QR kodla kontrol
@@ -17,6 +17,16 @@ GuruTime, macOS menü çubuğunda yaşayan, görevleri alarm ve hatırlatıcıla
 - Apple Silicon ve Intel Mac'ler için universal uygulama paketi
 
 GuruTime'ın temel görev ve alarm özellikleri internet bağlantısı olmadan çalışır. Telefon bağlantısı ve bulut relay'i isteğe bağlıdır.
+
+## Ekran görüntüleri
+
+| Görevler | Alarm kurma |
+| --- | --- |
+| <img src="docs/images/gurutime-gorevler.png" alt="GuruTime görev listesi" width="360"> | <img src="docs/images/gurutime-alarm.png" alt="GuruTime alarm kurma penceresi" width="360"> |
+
+| Telefon bağlantısı | Ayarlar |
+| --- | --- |
+| <img src="docs/images/gurutime-baglanti.png" alt="GuruTime telefon bağlantısı" width="360"> | <img src="docs/images/gurutime-ayarlar.png" alt="GuruTime ayarları" width="360"> |
 
 ## Hızlı başlangıç
 
@@ -43,6 +53,10 @@ GuruTime menü çubuğuna eklenir. Uygulama simgesine tıklayarak görev pencere
 2. **Ekle** düğmesiyle görevi listenize alın.
 3. Görev satırındaki **Alarm** düğmesine basıp süreyi seçin.
 4. Tamamladığınız görevi işaretleyin; dilerseniz arşivleyin veya silin.
+
+### Halat zamanlayıcı
+
+Menü çubuğundaki GuruTime simgesini aşağı doğru çekin. Halat uzadıkça seçilen süre artar; bıraktığınız noktada görev adını ve kategoriyi girerek alarmı oluşturabilirsiniz. Overlay macOS çalışma alanının dışına taşmaz, menü çubuğunu kapatmaz ve halat simgenin hemen altından kesintisiz başlar.
 
 ### Komut satırı
 
@@ -100,6 +114,8 @@ Universal macOS paketi için yayın süreci, imzalama ve noter onayı gerektirir
 ## Katkıda bulunma
 
 Hata bildirimi, geliştirme önerisi ve pull request'ler memnuniyetle karşılanır. Değişiklik göndermeden önce `npm run check` ve `npm test` komutlarının geçtiğini doğrulayın.
+
+Sürümdeki yenilikler için [değişiklik günlüğüne](CHANGELOG.md), hazır tanıtım metinleri için [Türkçe tanıtım dosyasına](docs/TANITIM.md) bakabilirsiniz.
 
 ## Lisans
 

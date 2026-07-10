@@ -131,3 +131,11 @@ test('overlay renderer has no direct Electron access and exposes dialog semantic
   assert.match(html, /prefers-reduced-transparency/);
   assert.match(html, /prefers-contrast/);
 });
+
+test('timer overlay uses a non-activating macOS panel', () => {
+  const root = path.resolve(__dirname, '../..');
+  const source = fs.readFileSync(path.join(root, 'src/main.js'), 'utf8');
+
+  assert.match(source, /type:\s*process\.platform === 'darwin' \? 'panel' : undefined/);
+  assert.match(source, /showInactive\(\)/);
+});

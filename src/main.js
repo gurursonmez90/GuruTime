@@ -29,6 +29,7 @@ const { LocalAuth } = require('./lib/local-auth');
 const { LocalControlServer } = require('./lib/local-control-server');
 const { SettingsStore } = require('./lib/settings-store');
 const { SignedUpdateClient } = require('./lib/update-client');
+const { computeTimerOverlayBounds } = require('./lib/window-geometry');
 
 let CloudRelayClient = null;
 try {
@@ -45,7 +46,7 @@ if (!hasSingleInstanceLock) {
 } else {
   const POPOVER_WIDTH = 440;
   const POPOVER_HEIGHT = 820;
-  const OVERLAY_TOP_CLEARANCE = 42;
+  const OVERLAY_TOP_CLEARANCE = 0;
   const DEFAULT_REMOTE_PORT = 47831;
   const ALARM_SOUND_PATH = '/System/Library/Sounds/Glass.aiff';
   const BALANCED_CADENCE_SECONDS = Object.freeze([0, 8, 20, 40, 70, 100]);
@@ -257,14 +258,21 @@ if (!hasSingleInstanceLock) {
     if (timerOverlay && !timerOverlay.isDestroyed()) timerOverlay.destroy();
     const trayBounds = tray.getBounds();
     const display = screen.getDisplayNearestPoint({ x: trayBounds.x, y: trayBounds.y });
-    const bounds = display.bounds;
-    const overlayY = Math.max(bounds.y, trayBounds.y + trayBounds.height + OVERLAY_TOP_CLEARANCE);
+    const overlayBounds = computeTimerOverlayBounds({
+      displayBounds: display.bounds,
+      workArea: display.workArea,
+      trayBounds,
+      topClearance: OVERLAY_TOP_CLEARANCE,
+    });
     timerOverlay = new BrowserWindow({
-      x: bounds.x,
-      y: overlayY,
-      width: bounds.width,
-      height: Math.max(1, bounds.y + bounds.height - overlayY),
+      x: overlayBounds.x,
+      y: overlayBounds.y,
+      width: overlayBounds.width,
+      height: overlayBounds.height,
       frame: false,
+      // A non-activating panel keeps the current app's macOS menu bar visible
+      // while GuruTime receives keyboard input in the confirmation form.
+      type: process.platform === 'darwin' ? 'panel' : undefined,
       transparent: true,
       backgroundColor: '#00000000',
       hasShadow: false,
@@ -280,8 +288,10 @@ if (!hasSingleInstanceLock) {
     timerOverlay.loadFile(path.join(__dirname, 'timer-overlay.html'));
     timerOverlay.webContents.once('did-finish-load', () => {
       if (!timerOverlay || timerOverlay.isDestroyed()) return;
-      const anchorX = Math.round(trayBounds.x + trayBounds.width / 2 - bounds.x);
-      timerOverlay.webContents.send('init-anchor', { x: anchorX, y: -OVERLAY_TOP_CLEARANCE });
+      timerOverlay.webContents.send('init-anchor', {
+        x: overlayBounds.anchorX,
+        y: overlayBounds.anchorY,
+      });
       timerOverlay.showInactive();
       startCursorTracking();
     });
