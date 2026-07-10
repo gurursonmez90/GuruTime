@@ -1,0 +1,52 @@
+# Reference workflow. Copy into the repository's CI provider only after secrets,
+# Apple signing import, and an isolated macOS runner are configured.
+name: GuruTime public release
+
+on:
+  workflow_dispatch:
+    inputs:
+      channel:
+        type: choice
+        options: [beta, stable]
+        required: true
+      publish:
+        type: boolean
+        default: false
+
+jobs:
+  release:
+    # This runner has the Developer ID certificate and the named notarytool
+    # Keychain profile installed by the release operator.
+    runs-on: [self-hosted, macOS]
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+      - run: npm ci
+      - run: node --test tests/release/*.test.mjs
+      - name: Materialize update signing key
+        shell: bash
+        env:
+          UPDATE_SIGNING_KEY_PEM: ${{ secrets.UPDATE_SIGNING_KEY_PEM }}
+        run: |
+          umask 077
+          printf '%s' "$UPDATE_SIGNING_KEY_PEM" > "$RUNNER_TEMP/update-private.pem"
+      - name: Build and optionally publish
+        shell: bash
+        env:
+          CSC_NAME: ${{ secrets.CSC_NAME }}
+          GURUTIME_NOTARY_PROFILE: ${{ secrets.GURUTIME_NOTARY_PROFILE }}
+          GURUTIME_DOWNLOADS_ORIGIN: ${{ vars.GURUTIME_DOWNLOADS_ORIGIN }}
+          GURUTIME_UPDATE_SIGNING_KEY_FILE: ${{ runner.temp }}/update-private.pem
+          R2_ACCOUNT_ID: ${{ secrets.R2_ACCOUNT_ID }}
+          R2_BUCKET: ${{ vars.R2_BUCKET }}
+          AWS_ACCESS_KEY_ID: ${{ secrets.R2_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.R2_SECRET_ACCESS_KEY }}
+        run: |
+          args=(--channel "${{ inputs.channel }}")
+          if [[ "${{ inputs.publish }}" == "true" ]]; then args+=(--publish); fi
+          node scripts/release/release.mjs "${args[@]}"

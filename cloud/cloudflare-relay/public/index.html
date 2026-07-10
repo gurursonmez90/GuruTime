@@ -1,0 +1,107 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+    <meta name="theme-color" content="#11182b">
+    <meta name="description" content="GuruTime görev ve alarm uzaktan kumandası">
+    <link rel="manifest" href="/manifest.webmanifest">
+    <link rel="icon" href="/icons/icon.svg" type="image/svg+xml">
+    <link rel="apple-touch-icon" href="/icons/icon.svg">
+    <link rel="stylesheet" href="/styles.css">
+    <title>GuruTime Kumanda</title>
+  </head>
+  <body>
+    <main class="shell">
+      <header class="hero">
+        <div class="brand-mark" aria-hidden="true"><span></span></div>
+        <div>
+          <p class="eyebrow">GURUTIME</p>
+          <h1>Telefon kumandası</h1>
+          <p class="lede">Mac’inizdeki görevleri uçtan uca şifreli komutlarla yönetin.</p>
+        </div>
+      </header>
+
+      <section id="install-card" class="card install-card" hidden>
+        <div>
+          <h2>Uygulama olarak ekleyin</h2>
+          <p>Hızlı erişim ve telefon bildirimleri için GuruTime’ı Ana Ekran’a ekleyin.</p>
+        </div>
+        <button id="install-button" class="button secondary" type="button">Yükle</button>
+      </section>
+
+      <section id="pair-card" class="card" hidden>
+        <div class="section-heading">
+          <span class="step">1</span>
+          <div>
+            <h2>Telefonu eşleştirin</h2>
+            <p>Davet 10 dakika ve tek kullanım için geçerlidir.</p>
+          </div>
+        </div>
+        <form id="pair-form">
+          <label for="device-name">Bu telefonun adı</label>
+          <input id="device-name" name="deviceName" maxlength="60" autocomplete="off" value="Telefonum">
+          <div id="pin-field">
+            <label for="pin">6 haneli PIN <span>Mac ekranında görünür</span></label>
+            <input id="pin" name="pin" inputmode="numeric" pattern="[0-9]{6}" maxlength="6" autocomplete="one-time-code">
+          </div>
+          <button class="button primary" type="submit">Güvenli eşleştir</button>
+        </form>
+      </section>
+
+      <section id="control-card" class="card" hidden>
+        <div class="section-heading">
+          <span class="step success" aria-hidden="true">✓</span>
+          <div>
+            <h2>Mac’e komut gönderin</h2>
+            <p>Görev içeriği sunucu tarafından okunamaz.</p>
+          </div>
+        </div>
+        <form id="command-form">
+          <fieldset class="segmented">
+            <legend>Komut türü</legend>
+            <label><input type="radio" name="kind" value="task" checked><span>Görev</span></label>
+            <label><input type="radio" name="kind" value="alarm"><span>Alarm</span></label>
+          </fieldset>
+          <label for="title">Başlık</label>
+          <input id="title" name="title" maxlength="180" required placeholder="Örn. Sunumu gönder">
+          <div id="alarm-options" hidden>
+            <label for="minutes">Ne kadar sonra?</label>
+            <select id="minutes" name="minutes">
+              <option value="5">5 dakika</option>
+              <option value="10">10 dakika</option>
+              <option value="15">15 dakika</option>
+              <option value="30" selected>30 dakika</option>
+              <option value="60">1 saat</option>
+              <option value="120">2 saat</option>
+              <option value="1440">24 saat</option>
+            </select>
+          </div>
+          <button class="button primary" type="submit">Şifrele ve gönder</button>
+        </form>
+      </section>
+
+      <section id="push-card" class="card" hidden>
+        <div class="section-heading">
+          <span class="step">2</span>
+          <div>
+            <h2>Telefon bildirimi</h2>
+            <p>Alarm adı gizli kalır; bildirim yalnız genel bir uyarı gösterir.</p>
+          </div>
+        </div>
+        <button id="push-button" class="button secondary" type="button">Bildirimleri aç</button>
+        <p id="ios-hint" class="hint" hidden>iPhone’da önce Paylaş → Ana Ekrana Ekle adımını tamamlayın.</p>
+      </section>
+
+      <section class="activity" aria-labelledby="activity-title">
+        <h2 id="activity-title">Bu oturum</h2>
+        <ol id="activity-list">
+          <li class="empty">Henüz işlem yok.</li>
+        </ol>
+      </section>
+
+      <div id="status" class="toast" role="status" aria-live="polite" hidden></div>
+    </main>
+    <script src="/app.js" type="module"></script>
+  </body>
+</html>

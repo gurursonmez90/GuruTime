@@ -1,0 +1,18 @@
+{
+  "id": "/",
+  "name": "GuruTime Kumanda",
+  "short_name": "GuruTime",
+  "description": "GuruTime Mac uygulaması için güvenli telefon kumandası",
+  "lang": "tr",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait-primary",
+  "background_color": "#080d19",
+  "theme_color": "#11182b",
+  "categories": ["productivity", "utilities"],
+  "icons": [
+    { "src": "/icons/icon.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "any" },
+    { "src": "/icons/maskable.svg", "sizes": "any", "type": "image/svg+xml", "purpose": "maskable" }
+  ]
+}

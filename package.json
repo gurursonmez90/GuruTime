@@ -1,0 +1,44 @@
+{
+  "name": "gurutime",
+  "version": "1.1.0",
+  "description": "Local-first task and alarm timer for the macOS menu bar",
+  "author": "Gurur Sonmez",
+  "license": "MIT",
+  "homepage": "https://github.com/gurursonmez90/GuruTime#readme",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/gurursonmez90/GuruTime.git"
+  },
+  "bugs": {
+    "url": "https://github.com/gurursonmez90/GuruTime/issues"
+  },
+  "main": "src/main.js",
+  "bin": {
+    "gurutime": "bin/gurutime.js"
+  },
+  "private": true,
+  "scripts": {
+    "start": "electron .",
+    "cli": "node bin/gurutime.js",
+    "check": "node scripts/check-source.mjs",
+    "test": "node scripts/run-tests.mjs",
+    "test:core": "node --test tests/core/*.test.js tests/*.test.js tests/ui/*.test.js",
+    "test:release": "node --test tests/release/*.test.mjs",
+    "test:cloud": "npm --prefix cloud/cloudflare-relay test",
+    "cloud:check": "npm --prefix cloud/cloudflare-relay run check",
+    "release:dry": "node scripts/release/release.mjs --channel beta --dry-run",
+    "release:pin-key": "node scripts/release/pin-update-public-key.mjs",
+    "release:beta": "node scripts/release/release.mjs --channel beta",
+    "release:stable": "node scripts/release/release.mjs --channel stable",
+    "release:verify": "node scripts/release/verify-artifact.mjs",
+    "dist": "node scripts/release/release.mjs --channel stable"
+  },
+  "devDependencies": {
+    "electron": "43.1.0",
+    "electron-builder": "^26.0.12"
+  },
+  "dependencies": {
+    "qrcode": "^1.5.4",
+    "ws": "8.21.0"
+  }
+}

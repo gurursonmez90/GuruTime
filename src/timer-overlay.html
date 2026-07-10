@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GuruTime Zamanlayıcı</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --accent: #3f78d8;
+      --surface: rgba(249, 250, 252, 0.96);
+      --surface-solid: #f9fafc;
+      --surface-muted: rgba(20, 24, 32, 0.055);
+      --line: rgba(19, 24, 33, 0.12);
+      --line-strong: rgba(19, 24, 33, 0.22);
+      --ink: #191d25;
+      --ink-soft: #555e6d;
+      --ink-faint: #737c8a;
+      --danger: #b4232f;
+      --focus: #245fae;
+      --radius-panel: 18px;
+      --radius-control: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      height: 100%;
+      overflow: hidden;
+      background: transparent;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    button,
+    input {
+      font: inherit;
+    }
+
+    button {
+      -webkit-app-region: no-drag;
+    }
+
+    canvas {
+      position: fixed;
+      inset: 0;
+      pointer-events: none;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .time-capsule {
+      --capsule-x: 0px;
+      --capsule-y: 0px;
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 112px;
+      height: 78px;
+      display: grid;
+      align-content: center;
+      justify-items: center;
+      gap: 3px;
+      overflow: hidden;
+      border: 1px solid rgba(255, 255, 255, 0.14);
+      border-radius: 16px;
+      background: rgba(25, 29, 37, 0.97);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.12),
+        0 13px 30px rgba(10, 14, 22, 0.24);
+      color: #f5f7fb;
+      opacity: 0;
+      pointer-events: none;
+      transform: translate3d(var(--capsule-x), var(--capsule-y), 0) scale(0.96);
+      transform-origin: 50% 20%;
+      transition: opacity 140ms ease, transform 180ms cubic-bezier(0.16, 1, 0.3, 1);
+      will-change: transform, opacity;
+    }
+
+    .time-capsule::before {
+      content: "";
+      position: absolute;
+      inset: 0 0 auto;
+      height: 4px;
+      background: var(--accent);
+      box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.24);
+    }
+
+    .time-capsule.is-visible {
+      opacity: 1;
+      transform: translate3d(var(--capsule-x), var(--capsule-y), 0) scale(1);
+    }
+
+    .capsule-time {
+      font-size: 27px;
+      font-weight: 740;
+      font-variant-numeric: tabular-nums;
+      letter-spacing: -0.7px;
+      line-height: 1;
+    }
+
+    .capsule-duration {
+      max-width: 98px;
+      color: rgba(245, 247, 251, 0.7);
+      font-size: 10.5px;
+      font-weight: 590;
+      line-height: 1.2;
+      text-align: center;
+      white-space: nowrap;
+    }
+
+    .confirmation {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 320px;
+      max-width: calc(100vw - 24px);
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: var(--surface);
+      -webkit-backdrop-filter: blur(24px) saturate(145%);
+      backdrop-filter: blur(24px) saturate(145%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.65),
+        0 18px 48px rgba(28, 35, 47, 0.22);
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      transition: opacity 150ms ease, transform 190ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .confirmation.is-measuring {
+      visibility: hidden;
+      opacity: 0;
+      pointer-events: none;
+    }
+
+    .confirmation-inner {
+      display: grid;
+      gap: 16px;
+      padding: 20px;
+    }
+
+    .dialog-heading {
+      display: grid;
+      gap: 5px;
+    }
+
+    .dialog-heading h1 {
+      color: var(--ink);
+      font-size: 18px;
+      font-weight: 720;
+      letter-spacing: -0.3px;
+      line-height: 1.2;
+    }
+
+    .dialog-time {
+      color: var(--ink-soft);
+      font-size: 13px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 580;
+      line-height: 1.35;
+    }
+
+    .field {
+      display: grid;
+      gap: 7px;
+    }
+
+    .field-label,
+    .category-label {
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 670;
+      line-height: 1.3;
+    }
+
+    .task-input {
+      width: 100%;
+      height: 42px;
+      border: 1px solid var(--line-strong);
+      border-radius: var(--radius-control);
+      outline: none;
+      background: rgba(255, 255, 255, 0.7);
+      color: var(--ink);
+      padding: 0 12px;
+      font-size: 15px;
+      font-weight: 520;
+      user-select: text;
+      transition: border-color 120ms ease, box-shadow 120ms ease, background 120ms ease;
+    }
+
+    .task-input::placeholder {
+      color: var(--ink-faint);
+      opacity: 1;
+    }
+
+    .task-input:hover {
+      background: rgba(255, 255, 255, 0.88);
+    }
+
+    .task-input:focus-visible {
+      border-color: var(--focus);
+      box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 24%, transparent);
+    }
+
+    .category-field {
+      display: grid;
+      gap: 8px;
+    }
+
+    .category-list {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .category-button {
+      min-width: 0;
+      height: 35px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      background: var(--surface-muted);
+      color: var(--ink-soft);
+      cursor: pointer;
+      font-size: 11.5px;
+      font-weight: 650;
+      white-space: nowrap;
+      transition: transform 100ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease;
+    }
+
+    .category-button:hover {
+      border-color: var(--line-strong);
+      color: var(--ink);
+    }
+
+    .category-button[aria-pressed="true"] {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 13%, transparent);
+      box-shadow: inset 0 -3px 0 var(--accent);
+      color: var(--ink);
+    }
+
+    .category-button:focus-visible,
+    .action-button:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--accent) 38%, transparent);
+      outline-offset: 2px;
+    }
+
+    .category-button:active,
+    .action-button:active {
+      transform: translateY(1px) scale(0.985);
+    }
+
+    .form-error {
+      min-height: 16px;
+      color: var(--danger);
+      font-size: 12px;
+      font-weight: 610;
+      line-height: 1.3;
+    }
+
+    .actions {
+      display: grid;
+      grid-template-columns: 0.8fr 1.2fr;
+      gap: 8px;
+    }
+
+    .action-button {
+      height: 40px;
+      border: 1px solid transparent;
+      border-radius: var(--radius-control);
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 680;
+      white-space: nowrap;
+      transition: transform 100ms ease, background 120ms ease, border-color 120ms ease;
+    }
+
+    .action-button.secondary {
+      border-color: var(--line);
+      background: transparent;
+      color: var(--ink-soft);
+    }
+
+    .action-button.secondary:hover {
+      border-color: var(--line-strong);
+      background: var(--surface-muted);
+      color: var(--ink);
+    }
+
+    .action-button.primary {
+      border-color: rgba(255, 255, 255, 0.08);
+      background: var(--ink);
+      box-shadow: inset 0 3px 0 var(--accent);
+      color: #f7f8fb;
+    }
+
+    .action-button.primary:hover {
+      background: #282e39;
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface: rgba(30, 34, 42, 0.96);
+        --surface-solid: #1e222a;
+        --surface-muted: rgba(255, 255, 255, 0.07);
+        --line: rgba(255, 255, 255, 0.12);
+        --line-strong: rgba(255, 255, 255, 0.22);
+        --ink: #f1f3f6;
+        --ink-soft: #b8bfca;
+        --ink-faint: #969eaa;
+        --danger: #ff959d;
+        --focus: #8bb4ef;
+      }
+
+      .confirmation {
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.1),
+          0 20px 52px rgba(5, 8, 13, 0.4);
+      }
+
+      .task-input {
+        background: rgba(7, 10, 15, 0.28);
+      }
+
+      .task-input:hover {
+        background: rgba(7, 10, 15, 0.4);
+      }
+
+      .action-button.primary {
+        background: #f1f3f6;
+        border-color: rgba(0, 0, 0, 0.1);
+        color: #181c23;
+      }
+
+      .action-button.primary:hover {
+        background: #dfe3e9;
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        scroll-behavior: auto !important;
+        transition-duration: 0.001ms !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      .confirmation {
+        background: var(--surface-solid);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+    }
+
+    @media (prefers-contrast: more) {
+      :root {
+        --line: rgba(0, 0, 0, 0.46);
+        --line-strong: rgba(0, 0, 0, 0.68);
+        --ink-soft: #2f3742;
+        --ink-faint: #46505d;
+      }
+
+      .time-capsule,
+      .confirmation,
+      .task-input,
+      .category-button,
+      .action-button {
+        border-width: 2px;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) and (prefers-contrast: more) {
+      :root {
+        --line: rgba(255, 255, 255, 0.48);
+        --line-strong: rgba(255, 255, 255, 0.72);
+        --ink-soft: #e0e4ea;
+        --ink-faint: #c5cbd3;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .time-capsule,
+      .confirmation,
+      .task-input,
+      .category-button,
+      .action-button {
+        border: 2px solid CanvasText;
+        forced-color-adjust: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <canvas id="ropeCanvas" aria-hidden="true"></canvas>
+
+  <div class="time-capsule" id="timeCapsule" aria-hidden="true">
+    <span class="capsule-time" id="capsuleTime">00:00</span>
+    <span class="capsule-duration" id="capsuleDuration">1 dk sonra</span>
+  </div>
+
+  <div class="confirmation" id="confirmation" role="dialog" aria-modal="true" aria-labelledby="dialogTitle" aria-describedby="dialogTime formError" hidden>
+    <form class="confirmation-inner" id="timerForm" novalidate>
+      <header class="dialog-heading">
+        <h1 id="dialogTitle">Hatırlatma ekle</h1>
+        <p class="dialog-time" id="dialogTime">00:00 için</p>
+      </header>
+
+      <div class="field">
+        <label class="field-label" for="taskInput">Hatırlatma adı</label>
+        <input class="task-input" id="taskInput" name="title" type="text" maxlength="180" autocomplete="off" placeholder="Örn. Sunumu gönder" aria-describedby="formError">
+      </div>
+
+      <div class="category-field">
+        <span class="category-label" id="categoryLabel">Kategori</span>
+        <div class="category-list" id="categoryList" role="group" aria-labelledby="categoryLabel">
+          <button class="category-button" type="button" data-category="important" aria-pressed="false">Önemli</button>
+          <button class="category-button" type="button" data-category="later" aria-pressed="false">Bir Ara</button>
+          <button class="category-button" type="button" data-category="today" aria-pressed="true">Bugün</button>
+        </div>
+      </div>
+
+      <p class="form-error" id="formError" role="alert"></p>
+
+      <div class="actions">
+        <button class="action-button secondary" id="cancelButton" type="button">Vazgeç</button>
+        <button class="action-button primary" id="confirmButton" type="submit">Alarmı kur</button>
+      </div>
+    </form>
+  </div>
+
+  <p class="sr-only" id="timerLive" aria-live="polite" aria-atomic="true"></p>
+  <script src="timer-visuals.js"></script>
+</body>
+</html>

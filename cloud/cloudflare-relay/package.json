@@ -1,0 +1,26 @@
+{
+  "name": "@gurutime/cloudflare-relay",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "check": "tsc --noEmit",
+    "dev": "wrangler dev",
+    "deploy": "wrangler deploy",
+    "test": "vitest run --max-workers=1 --no-isolate",
+    "test:load": "node scripts/load-test.mjs",
+    "test:watch": "vitest --max-workers=1 --no-isolate",
+    "types": "wrangler types"
+  },
+  "dependencies": {
+    "@block65/webcrypto-web-push": "1.0.2"
+  },
+  "devDependencies": {
+    "@cloudflare/vitest-pool-workers": "0.18.4",
+    "@cloudflare/workers-types": "5.20260710.1",
+    "typescript": "5.9.3",
+    "vitest": "4.1.10",
+    "wrangler": "4.110.0",
+    "ws": "8.21.0"
+  }
+}

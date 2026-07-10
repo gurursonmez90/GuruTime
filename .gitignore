@@ -1,0 +1,26 @@
+node_modules/
+dist/
+.DS_Store
+*.log
+
+# Yerel geliştirme ve servis çıktıları
+.wrangler/
+cloud/cloudflare-relay/node_modules/
+cloud/cloudflare-relay/.wrangler/
+
+# İmzalama, noter onayı ve yayın anahtarları
+*.p12
+*.p8
+*.pem
+*.key
+*.cer
+*.crt
+*.mobileprovision
+.env
+.env.*
+!.env.example
+
+# Kişisel çalışma dosyaları ve üretilmiş tasarım çıktıları
+google-cloud-billing-appeal/
+design-output/
+assets/*.backup.*

@@ -1,0 +1,15 @@
+# Generate both with: openssl rand -base64 32
+AUTH_PEPPER="replace-with-at-least-32-random-bytes"
+INTERNAL_SECRET="replace-with-an-independent-random-value"
+ENVIRONMENT="development"
+PUBLIC_APP_ORIGIN="http://localhost:8787"
+TURNSTILE_SITE_KEY=""
+
+# Optional: when omitted locally, enrollment skips Turnstile verification.
+TURNSTILE_SECRET=""
+
+# Optional: generate once with `npx web-push generate-vapid-keys --json` or an
+# equivalent standards-compliant P-256 VAPID key generator.
+VAPID_SUBJECT="mailto:admin@example.com"
+VAPID_PUBLIC_KEY=""
+VAPID_PRIVATE_KEY=""

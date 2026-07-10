@@ -1,0 +1,463 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'unsafe-inline'; img-src 'self' data:; connect-src 'self'; object-src 'none'; base-uri 'none'">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>GuruTime Alarm</title>
+  <style>
+    :root {
+      color-scheme: light dark;
+      --accent: #3f78d8;
+      --surface: rgba(248, 249, 251, 0.97);
+      --surface-solid: #f8f9fb;
+      --surface-muted: rgba(24, 29, 38, 0.055);
+      --line: rgba(18, 23, 31, 0.12);
+      --line-strong: rgba(18, 23, 31, 0.22);
+      --ink: #191d25;
+      --ink-soft: #555e6d;
+      --ink-faint: #747d89;
+      --focus: #245fae;
+      --danger: #b4232f;
+      --radius-panel: 22px;
+      --radius-control: 11px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    html,
+    body {
+      width: 100%;
+      min-height: 100%;
+      overflow: hidden;
+      background: transparent;
+      color: var(--ink);
+      font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Helvetica Neue", sans-serif;
+      -webkit-font-smoothing: antialiased;
+      user-select: none;
+    }
+
+    body {
+      min-height: 100vh;
+      display: grid;
+      place-items: center;
+      padding: 10px;
+    }
+
+    button {
+      font: inherit;
+      -webkit-app-region: no-drag;
+    }
+
+    [hidden] {
+      display: none !important;
+    }
+
+    .sr-only {
+      position: absolute;
+      width: 1px;
+      height: 1px;
+      padding: 0;
+      margin: -1px;
+      overflow: hidden;
+      clip: rect(0, 0, 0, 0);
+      white-space: nowrap;
+      border: 0;
+    }
+
+    .alarm-panel {
+      position: relative;
+      width: min(420px, calc(100vw - 20px));
+      overflow: hidden;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-panel);
+      background: var(--surface);
+      -webkit-backdrop-filter: blur(26px) saturate(145%);
+      backdrop-filter: blur(26px) saturate(145%);
+      box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.72),
+        0 22px 60px rgba(24, 31, 43, 0.24);
+      opacity: 1;
+      transform: translateY(0) scale(1);
+      animation: panel-enter 280ms cubic-bezier(0.16, 1, 0.3, 1) both;
+    }
+
+    .alarm-panel::before {
+      content: "";
+      position: absolute;
+      inset: 0 auto 0 0;
+      width: 6px;
+      background: var(--accent);
+    }
+
+    .alarm-content {
+      display: grid;
+      gap: 20px;
+      padding: 22px 22px 22px 26px;
+    }
+
+    .alarm-header {
+      display: grid;
+      grid-template-columns: minmax(0, 1fr) auto;
+      align-items: start;
+      gap: 16px;
+    }
+
+    .alarm-copy {
+      min-width: 0;
+    }
+
+    .alarm-kind {
+      margin-bottom: 10px;
+      color: var(--accent);
+      font-size: 12px;
+      font-weight: 720;
+      line-height: 1;
+    }
+
+    .alarm-title {
+      max-width: 15ch;
+      overflow-wrap: anywhere;
+      color: var(--ink);
+      font-size: clamp(26px, 8vw, 34px);
+      font-weight: 750;
+      letter-spacing: -1px;
+      line-height: 1.08;
+    }
+
+    .alarm-description {
+      margin-top: 9px;
+      max-width: 34ch;
+      color: var(--ink-soft);
+      font-size: 13px;
+      font-weight: 500;
+      line-height: 1.45;
+    }
+
+    .hide-button {
+      height: 32px;
+      border: 1px solid var(--line);
+      border-radius: 9px;
+      background: var(--surface-muted);
+      color: var(--ink-soft);
+      cursor: pointer;
+      padding: 0 10px;
+      font-size: 11.5px;
+      font-weight: 660;
+      white-space: nowrap;
+      transition: transform 100ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease;
+    }
+
+    .hide-button:hover {
+      border-color: var(--line-strong);
+      background: rgba(24, 29, 38, 0.09);
+      color: var(--ink);
+    }
+
+    .alarm-meta {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 8px;
+    }
+
+    .meta-item {
+      min-height: 55px;
+      display: grid;
+      align-content: center;
+      gap: 3px;
+      border: 1px solid var(--line);
+      border-radius: var(--radius-control);
+      background: var(--surface-muted);
+      padding: 9px 11px;
+    }
+
+    .meta-label {
+      color: var(--ink-faint);
+      font-size: 10.5px;
+      font-weight: 620;
+      line-height: 1.2;
+    }
+
+    .meta-value {
+      overflow-wrap: anywhere;
+      color: var(--ink);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 680;
+      line-height: 1.3;
+    }
+
+    .snooze-section {
+      display: grid;
+      gap: 9px;
+    }
+
+    .section-label {
+      color: var(--ink);
+      font-size: 12px;
+      font-weight: 680;
+      line-height: 1.3;
+    }
+
+    .snooze-options {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 6px;
+    }
+
+    .snooze-button,
+    .action-button {
+      border-radius: var(--radius-control);
+      cursor: pointer;
+      white-space: nowrap;
+      transition: transform 100ms ease, border-color 120ms ease, background 120ms ease, color 120ms ease, opacity 120ms ease;
+    }
+
+    .snooze-button {
+      height: 38px;
+      border: 1px solid var(--line);
+      background: transparent;
+      color: var(--ink-soft);
+      font-size: 12px;
+      font-variant-numeric: tabular-nums;
+      font-weight: 650;
+    }
+
+    .snooze-button:hover {
+      border-color: var(--accent);
+      background: color-mix(in srgb, var(--accent) 11%, transparent);
+      color: var(--ink);
+    }
+
+    .primary-actions {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 8px;
+    }
+
+    .action-button {
+      min-height: 43px;
+      border: 1px solid transparent;
+      padding: 0 14px;
+      font-size: 13px;
+      font-weight: 700;
+    }
+
+    .action-button.dismiss {
+      border-color: rgba(255, 255, 255, 0.08);
+      background: var(--ink);
+      box-shadow: inset 0 3px 0 var(--accent);
+      color: #f7f8fb;
+    }
+
+    .action-button.dismiss:hover {
+      background: #282e39;
+    }
+
+    .action-button.complete {
+      border-color: var(--line);
+      background: var(--surface-muted);
+      color: var(--ink);
+    }
+
+    .action-button.complete:hover {
+      border-color: var(--line-strong);
+      background: rgba(24, 29, 38, 0.1);
+    }
+
+    button:focus-visible {
+      outline: 3px solid color-mix(in srgb, var(--accent) 38%, transparent);
+      outline-offset: 2px;
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.985);
+    }
+
+    button:disabled {
+      cursor: default;
+      opacity: 0.45;
+      transform: none;
+    }
+
+    .action-status {
+      min-height: 16px;
+      color: var(--danger);
+      font-size: 12px;
+      font-weight: 600;
+      line-height: 1.3;
+    }
+
+    @keyframes panel-enter {
+      from {
+        opacity: 0;
+        transform: translateY(10px) scale(0.985);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+      }
+    }
+
+    @media (prefers-color-scheme: dark) {
+      :root {
+        --surface: rgba(29, 33, 41, 0.97);
+        --surface-solid: #1d2129;
+        --surface-muted: rgba(255, 255, 255, 0.07);
+        --line: rgba(255, 255, 255, 0.12);
+        --line-strong: rgba(255, 255, 255, 0.23);
+        --ink: #f1f3f6;
+        --ink-soft: #bac1cb;
+        --ink-faint: #969eaa;
+        --focus: #8bb4ef;
+        --danger: #ff959d;
+      }
+
+      .alarm-panel {
+        box-shadow:
+          inset 0 1px 0 rgba(255, 255, 255, 0.1),
+          0 24px 64px rgba(4, 7, 12, 0.44);
+      }
+
+      .hide-button:hover,
+      .action-button.complete:hover {
+        background: rgba(255, 255, 255, 0.12);
+      }
+
+      .action-button.dismiss {
+        border-color: rgba(0, 0, 0, 0.1);
+        background: #f1f3f6;
+        color: #181c23;
+      }
+
+      .action-button.dismiss:hover {
+        background: #dfe3e9;
+      }
+    }
+
+    @media (max-width: 360px) {
+      body {
+        padding: 6px;
+      }
+
+      .alarm-content {
+        gap: 16px;
+        padding: 18px 16px 18px 20px;
+      }
+
+      .alarm-meta,
+      .primary-actions {
+        grid-template-columns: 1fr;
+      }
+
+      .snooze-options {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+    }
+
+    @media (prefers-reduced-motion: reduce) {
+      *,
+      *::before,
+      *::after {
+        transition-duration: 0.001ms !important;
+        animation-duration: 0.001ms !important;
+        animation-iteration-count: 1 !important;
+      }
+    }
+
+    @media (prefers-reduced-transparency: reduce) {
+      .alarm-panel {
+        background: var(--surface-solid);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+    }
+
+    @media (prefers-contrast: more) {
+      :root {
+        --line: rgba(0, 0, 0, 0.48);
+        --line-strong: rgba(0, 0, 0, 0.72);
+        --ink-soft: #303844;
+        --ink-faint: #47515f;
+      }
+
+      .alarm-panel,
+      .hide-button,
+      .meta-item,
+      .snooze-button,
+      .action-button {
+        border-width: 2px;
+      }
+    }
+
+    @media (prefers-color-scheme: dark) and (prefers-contrast: more) {
+      :root {
+        --line: rgba(255, 255, 255, 0.5);
+        --line-strong: rgba(255, 255, 255, 0.74);
+        --ink-soft: #e0e4ea;
+        --ink-faint: #c5cbd3;
+      }
+    }
+
+    @media (forced-colors: active) {
+      .alarm-panel,
+      .hide-button,
+      .meta-item,
+      .snooze-button,
+      .action-button {
+        border: 2px solid CanvasText;
+        forced-color-adjust: auto;
+      }
+    }
+  </style>
+</head>
+<body>
+  <main class="alarm-panel" id="alarmPanel" role="alertdialog" aria-modal="true" aria-labelledby="alarmTitle" aria-describedby="alarmDescription alarmStatus" tabindex="-1">
+    <div class="alarm-content">
+      <header class="alarm-header">
+        <div class="alarm-copy">
+          <p class="alarm-kind">Alarm</p>
+          <h1 class="alarm-title" id="alarmTitle">Alarm hazırlanıyor</h1>
+          <p class="alarm-description" id="alarmDescription">Alarm bilgisi bekleniyor.</p>
+        </div>
+        <button class="hide-button" id="hideButton" type="button" aria-label="Alarm penceresini gizle">Gizle</button>
+      </header>
+
+      <div class="alarm-meta" aria-label="Alarm bilgileri">
+        <div class="meta-item">
+          <span class="meta-label">Zaman</span>
+          <span class="meta-value" id="latenessText">Tam zamanında</span>
+        </div>
+        <div class="meta-item" id="queueItem">
+          <span class="meta-label">Sıra</span>
+          <span class="meta-value" id="queueText">Başka alarm yok</span>
+        </div>
+      </div>
+
+      <section class="snooze-section" aria-labelledby="snoozeLabel">
+        <h2 class="section-label" id="snoozeLabel">Ertele</h2>
+        <div class="snooze-options" id="snoozeOptions" role="group" aria-labelledby="snoozeLabel">
+          <button class="snooze-button" type="button" data-snooze="5" disabled>5 dk</button>
+          <button class="snooze-button" type="button" data-snooze="10" disabled>10 dk</button>
+          <button class="snooze-button" type="button" data-snooze="15" disabled>15 dk</button>
+          <button class="snooze-button" type="button" data-snooze="30" disabled>30 dk</button>
+        </div>
+      </section>
+
+      <div class="primary-actions">
+        <button class="action-button dismiss" id="dismissButton" type="button" disabled>Tamam</button>
+        <button class="action-button complete" id="completeButton" type="button" disabled>Görevi bitir</button>
+      </div>
+
+      <p class="action-status" id="alarmStatus" role="status" aria-live="polite"></p>
+    </div>
+  </main>
+
+  <p class="sr-only" id="alarmLive" aria-live="assertive" aria-atomic="true"></p>
+  <script src="alarm-window.js"></script>
+</body>
+</html>

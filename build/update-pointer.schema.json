@@ -1,0 +1,33 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://gurutime.example/schemas/update-pointer-v1.json",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["schemaVersion", "payload", "signature"],
+  "properties": {
+    "schemaVersion": { "const": 1 },
+    "payload": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["schemaVersion", "channel", "version", "publishedAt", "manifestSha256", "manifestUrl"],
+      "properties": {
+        "schemaVersion": { "const": 1 },
+        "channel": { "enum": ["stable", "beta"] },
+        "version": { "type": "string", "pattern": "^[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?$" },
+        "publishedAt": { "type": "string", "format": "date-time" },
+        "manifestSha256": { "type": "string", "pattern": "^[0-9a-f]{64}$" },
+        "manifestUrl": { "type": "string", "format": "uri", "pattern": "^https://" }
+      }
+    },
+    "signature": {
+      "type": "object",
+      "additionalProperties": false,
+      "required": ["algorithm", "keyId", "value"],
+      "properties": {
+        "algorithm": { "const": "Ed25519" },
+        "keyId": { "type": "string", "pattern": "^[0-9a-f]{16}$" },
+        "value": { "type": "string" }
+      }
+    }
+  }
+}

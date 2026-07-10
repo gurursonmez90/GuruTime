@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="tr">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self'; style-src 'self'; img-src 'self' data:; connect-src 'none'; object-src 'none'; base-uri 'none'; form-action 'none'; frame-ancestors 'none'">
+  <title>GuruTime</title>
+  <link rel="stylesheet" href="index.css">
+</head>
+<body>
+  <div class="app" id="app">
+    <header class="app-header">
+      <div class="brand">
+        <img src="../assets/favicon.png" alt="" width="40" height="40">
+        <div>
+          <h1>GuruTime</h1>
+          <p id="headerStatus">Yerel ve hazır</p>
+        </div>
+      </div>
+      <button class="icon-button" id="quitButton" type="button" aria-label="GuruTime'dan çık" title="Çık">⌘Q</button>
+    </header>
+
+    <nav class="tabs" aria-label="GuruTime bölümleri" role="tablist">
+      <button class="tab active" id="tasksTab" type="button" role="tab" aria-selected="true" data-tab="tasks">Görevler</button>
+      <button class="tab" id="connectionsTab" type="button" role="tab" aria-selected="false" data-tab="connections">Bağlantı</button>
+      <button class="tab" id="settingsTab" type="button" role="tab" aria-selected="false" data-tab="settings">Ayarlar</button>
+    </nav>
+
+    <main class="content" id="content" tabindex="-1"></main>
+
+    <form class="quick-add" id="quickAddForm" autocomplete="off">
+      <label class="sr-only" for="quickAddInput">Yeni görev</label>
+      <select id="quickAddCategory" aria-label="Görev kategorisi">
+        <option value="today">Bugün</option>
+        <option value="important">Önemli</option>
+        <option value="later">Bir Ara</option>
+      </select>
+      <input id="quickAddInput" maxlength="240" placeholder="Yeni görev ekle" required>
+      <button class="primary compact" type="submit">Ekle</button>
+    </form>
+
+    <footer class="footer">
+      <span id="taskCount">0 açık görev</span>
+      <span>Veriler bu Mac'te</span>
+    </footer>
+  </div>
+
+  <dialog class="modal" id="alarmDialog" aria-labelledby="alarmDialogTitle">
+    <form method="dialog" id="alarmForm">
+      <div class="modal-heading">
+        <div>
+          <span class="eyebrow">Hatırlatıcı</span>
+          <h2 id="alarmDialogTitle">Alarm ayarla</h2>
+        </div>
+        <button class="close-button" type="button" data-close="alarmDialog" aria-label="Kapat">×</button>
+      </div>
+      <p class="modal-task" id="alarmTaskTitle"></p>
+      <label for="alarmMinutes">Ne kadar sonra?</label>
+      <div class="duration-input">
+        <input id="alarmMinutes" type="number" min="1" max="1440" step="1" value="10" required>
+        <span>dakika</span>
+      </div>
+      <div class="duration-presets" aria-label="Hızlı süre seçimi">
+        <button type="button" data-minutes="5">5 dk</button>
+        <button type="button" data-minutes="10">10 dk</button>
+        <button type="button" data-minutes="30">30 dk</button>
+        <button type="button" data-minutes="60">1 saat</button>
+      </div>
+      <p class="form-error" id="alarmError" role="alert"></p>
+      <div class="modal-actions">
+        <button class="secondary" type="button" data-close="alarmDialog">Vazgeç</button>
+        <button class="primary" type="submit">Alarmı kur</button>
+      </div>
+    </form>
+  </dialog>
+
+  <dialog class="modal pairing-modal" id="pairingDialog" aria-labelledby="pairingTitle">
+    <div class="modal-heading">
+      <div>
+        <span class="eyebrow">Tek kullanımlık</span>
+        <h2 id="pairingTitle">Telefonu eşleştir</h2>
+      </div>
+      <button class="close-button" type="button" data-close="pairingDialog" aria-label="Kapat">×</button>
+    </div>
+    <div class="qr-frame" id="qrFrame">
+      <img id="qrImage" width="220" height="220" alt="Telefon eşleştirme QR kodu">
+    </div>
+    <p class="pairing-help">Kodu telefonunuzla tarayın. Eşleştirme anahtarı buluta gönderilmez ve 10 dakika sonra geçersiz olur.</p>
+    <div class="pin-row" id="pairingPinRow" hidden>
+      <span>Paylaşım PIN'i</span>
+      <strong id="pairingPin"></strong>
+    </div>
+    <p class="form-error" id="pairingError" role="alert"></p>
+  </dialog>
+
+  <div class="lock-screen" id="lockScreen" hidden>
+    <form class="lock-card" id="unlockForm">
+      <img src="../assets/favicon.png" alt="" width="48" height="48">
+      <div>
+        <span class="eyebrow">Yerel gizlilik kilidi</span>
+        <h2>GuruTime kilitli</h2>
+      </div>
+      <label for="unlockPassword">Parola</label>
+      <input id="unlockPassword" type="password" autocomplete="current-password" required>
+      <p class="form-error" id="unlockError" role="alert"></p>
+      <button class="primary" type="submit">Kilidi aç</button>
+    </form>
+  </div>
+
+  <div class="toast" id="toast" role="status" aria-live="polite" hidden></div>
+  <script src="index.js"></script>
+</body>
+</html>
