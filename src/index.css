@@ -1,7 +1,9 @@
 :root {
   color-scheme: light dark;
   /* Dusty warm reds + one contrasting cool teal accent */
-  --bg-base: rgba(246, 236, 230, 0.75);
+  /* Window is transparent with no native vibrancy, so the base must stay
+     near-opaque — otherwise the desktop bleeds through the popover. */
+  --bg-base: rgba(247, 238, 232, 0.97);
   --aurora-1: rgba(196, 66, 52, 0.26);    /* brick red */
   --aurora-2: rgba(202, 108, 64, 0.24);   /* burnt rust */
   --aurora-3: rgba(190, 90, 88, 0.22);    /* deep rose */
@@ -32,7 +34,7 @@
 
 @media (prefers-color-scheme: dark) {
   :root {
-    --bg-base: rgba(28, 18, 14, 0.77);
+    --bg-base: rgba(26, 17, 13, 0.975);
     --aurora-1: rgba(226, 88, 66, 0.40);    /* brick red glow */
     --aurora-2: rgba(216, 126, 74, 0.28);   /* rust */
     --aurora-3: rgba(208, 106, 102, 0.28);  /* rose */

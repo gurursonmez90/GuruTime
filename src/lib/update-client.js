@@ -5,6 +5,8 @@ const fs = require('fs');
 const path = require('path');
 
 const MAX_MANIFEST_BYTES = 128 * 1024;
+const MAX_GITHUB_RESPONSE_BYTES = 512 * 1024;
+const DEFAULT_GITHUB_REPOSITORY = 'gurursonmez90/GuruTime';
 
 function canonicalJson(value) {
   if (value === null || typeof value !== 'object') return JSON.stringify(value);
@@ -160,11 +162,117 @@ class SignedUpdateClient {
   }
 }
 
+function cleanGitHubVersion(value) {
+  const version = String(value || '').trim().replace(/^v/i, '');
+  compareVersions(version, version);
+  return version;
+}
+
+function trustedGitHubReleaseUrl(value, repository) {
+  const url = new URL(String(value || ''));
+  if (url.protocol !== 'https:' || url.origin !== 'https://github.com') {
+    throw new Error('GitHub sürüm bağlantısı güvenilir değil.');
+  }
+  const prefix = `/${repository}/releases/`;
+  if (!url.pathname.startsWith(prefix)) throw new Error('GitHub sürüm bağlantısı beklenen depoya ait değil.');
+  return url.toString();
+}
+
+class GitHubUpdateClient {
+  constructor({
+    repository = DEFAULT_GITHUB_REPOSITORY,
+    branch = 'main',
+    channel = 'stable',
+    currentVersion,
+    fetchImpl = globalThis.fetch,
+  } = {}) {
+    if (!/^[A-Za-z0-9_.-]+\/[A-Za-z0-9_.-]+$/.test(repository)) throw new Error('GitHub depo adı geçersiz.');
+    if (!/^[A-Za-z0-9._/-]+$/.test(branch)) throw new Error('GitHub dal adı geçersiz.');
+    this.repository = repository;
+    this.branch = branch;
+    this.channel = channel === 'beta' ? 'beta' : 'stable';
+    this.currentVersion = cleanGitHubVersion(currentVersion);
+    this.fetch = fetchImpl;
+  }
+
+  async fetchJson(url, expectedOrigin, maxBytes = MAX_GITHUB_RESPONSE_BYTES) {
+    const response = await this.fetch(url, {
+      cache: 'no-store',
+      redirect: 'follow',
+      headers: { Accept: 'application/vnd.github+json' },
+    });
+    if (!response.ok) throw new Error(`GitHub HTTP ${response.status} döndürdü.`);
+    const finalUrl = new URL(response.url || url);
+    if (finalUrl.origin !== expectedOrigin) throw new Error('GitHub yanıtı güvenilmeyen bir adrese yönlendirildi.');
+    return JSON.parse((await responseBytes(response, maxBytes)).toString('utf8'));
+  }
+
+  releaseCandidate(release) {
+    if (!release || release.draft === true || typeof release.tag_name !== 'string') return null;
+    if (this.channel === 'stable' && release.prerelease === true) return null;
+    try {
+      return {
+        version: cleanGitHubVersion(release.tag_name),
+        url: trustedGitHubReleaseUrl(release.html_url, this.repository),
+        kind: 'release',
+      };
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async latestRelease() {
+    const endpoint = this.channel === 'stable'
+      ? `https://api.github.com/repos/${this.repository}/releases/latest`
+      : `https://api.github.com/repos/${this.repository}/releases?per_page=20`;
+    const payload = await this.fetchJson(endpoint, 'https://api.github.com');
+    const releases = Array.isArray(payload) ? payload : [payload];
+    return releases
+      .map((release) => this.releaseCandidate(release))
+      .filter(Boolean)
+      .sort((left, right) => compareVersions(right.version, left.version))[0] || null;
+  }
+
+  async sourceCandidate() {
+    const url = `https://raw.githubusercontent.com/${this.repository}/${this.branch}/package.json`;
+    const packageData = await this.fetchJson(url, 'https://raw.githubusercontent.com', 64 * 1024);
+    const version = cleanGitHubVersion(packageData.version);
+    if (this.channel === 'stable' && version.includes('-')) return null;
+    return {
+      version,
+      url: `https://github.com/${this.repository}`,
+      kind: 'source',
+    };
+  }
+
+  async check() {
+    let release = null;
+    try {
+      release = await this.latestRelease();
+    } catch (_) {
+      // A repository may not have a GitHub Release yet. The versioned source
+      // branch remains a useful, read-only notification fallback.
+    }
+    if (release && compareVersions(release.version, this.currentVersion) > 0) {
+      return { available: true, ...release };
+    }
+    const source = await this.sourceCandidate();
+    if (source && compareVersions(source.version, this.currentVersion) > 0) {
+      return { available: true, ...source };
+    }
+    return { available: false, version: release?.version || source?.version || this.currentVersion };
+  }
+}
+
 module.exports = {
+  DEFAULT_GITHUB_REPOSITORY,
+  GitHubUpdateClient,
   SignedUpdateClient,
   canonicalJson,
+  cleanGitHubVersion,
   compareVersions,
   normalizeDownloadsOrigin,
   publicKeyId,
+  trustedGitHubReleaseUrl,
   verifySignedEnvelope,
 };

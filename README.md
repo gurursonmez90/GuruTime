@@ -1,68 +1,67 @@
 # GuruTime
 
-GuruTime, macOS menü çubuğunda yaşayan, görevleri alarm ve hatırlatıcılara dönüştüren açık kaynak bir üretkenlik uygulamasıdır. İnternet bağlantısı gerektirmeden çalışır, veriyi Mac'inizde tutar ve menü çubuğundan aşağı doğru çekilen görsel halatla birkaç saniyede alarm oluşturur.
+GuruTime, macOS menü çubuğundan birkaç saniyede görev ve alarm oluşturmanızı sağlayan açık kaynak bir zamanlayıcıdır. Temel özellikleri internetsiz çalışır ve verilerinizi Mac'inizde tutar.
 
-![GuruTime görevler ekranı](docs/images/gurutime-gorevler.png)
+<p align="center">
+  <img src="docs/images/gurutime-sarkac.gif" alt="Menü çubuğundan aşağı çekilen GuruTime zamanlayıcısı" width="440">
+</p>
 
-## Neler sunuyor?
+Menü çubuğundaki GuruTime simgesini aşağı çekin. Halat uzadıkça süre artar; bıraktığınızda görev adını yazıp alarmı kurarsınız.
 
-- Görevleri **Önemli**, **Bugün** ve **Bir Ara** başlıklarında düzenleme
-- Her görev için dakikalar içinde alarm kurma
-- Menü çubuğundan aşağı çekilen halatla görsel zamanlayıcı
-- Tamamlanan görevleri arşivleme ve geri getirme
-- İsteğe bağlı yerel parola kilidi
-- Aynı ağdaki telefondan, tek kullanımlık QR kodla kontrol
-- İsteğe bağlı Cloudflare relay ve Web Push desteği
-- Hermes/terminal araçları için komut satırı köprüsü
-- Apple Silicon ve Intel Mac'ler için universal uygulama paketi
+## Kolay kurulum
 
-GuruTime'ın temel görev ve alarm özellikleri internet bağlantısı olmadan çalışır. Telefon bağlantısı ve bulut relay'i isteğe bağlıdır.
+Gerekenler: **macOS 12+** ve **Node.js 22.12+**.
 
-## Ekran görüntüleri
-
-| Görevler | Alarm kurma |
-| --- | --- |
-| <img src="docs/images/gurutime-gorevler.png" alt="GuruTime görev listesi" width="360"> | <img src="docs/images/gurutime-alarm.png" alt="GuruTime alarm kurma penceresi" width="360"> |
-
-| Telefon bağlantısı | Ayarlar |
-| --- | --- |
-| <img src="docs/images/gurutime-baglanti.png" alt="GuruTime telefon bağlantısı" width="360"> | <img src="docs/images/gurutime-ayarlar.png" alt="GuruTime ayarları" width="360"> |
-
-## Hızlı başlangıç
-
-Gereksinimler:
-
-- macOS 12 veya daha yeni bir sürüm
-- Node.js 22.12 veya daha yeni bir sürüm
-- npm
-
-Projeyi çalıştırmak için:
+Aşağıdaki tek satırı Terminal'e yapıştırın:
 
 ```bash
-git clone https://github.com/gurursonmez90/GuruTime.git
-cd GuruTime
-npm ci
-npm start
+git clone https://github.com/gurursonmez90/GuruTime.git && cd GuruTime && npm ci && npm start
 ```
 
-GuruTime menü çubuğuna eklenir. Uygulama simgesine tıklayarak görev penceresini açabilirsiniz.
+GuruTime menü çubuğunda açılır. Sonraki açılışlarda proje klasöründe yalnızca `npm start` çalıştırmanız yeterlidir.
 
-## Kullanım
+## Menü ve görevler
 
-1. Alt bölümdeki alana görev adını yazın ve kategorisini seçin.
-2. **Ekle** düğmesiyle görevi listenize alın.
-3. Görev satırındaki **Alarm** düğmesine basıp süreyi seçin.
-4. Tamamladığınız görevi işaretleyin; dilerseniz arşivleyin veya silin.
+![GuruTime'ın yeni görevler menüsü](docs/images/gurutime-gorevler.png)
 
-### Halat zamanlayıcı
+1. Alttaki alana görevi yazın ve **Ekle**'ye basın.
+2. Görevdeki zil düğmesinden alarm süresini seçin.
+3. Biten görevi işaretleyin; isterseniz arşivleyin veya silin.
 
-Menü çubuğundaki GuruTime simgesini aşağı doğru çekin. Halat uzadıkça seçilen süre artar; bıraktığınız noktada görev adını ve kategoriyi girerek alarmı oluşturabilirsiniz. Overlay macOS çalışma alanının dışına taşmaz, menü çubuğunu kapatmaz ve halat simgenin hemen altından kesintisiz başlar.
+Görevlerinizi **Önemli**, **Bugün** ve **Bir Ara** bölümlerinde tutabilirsiniz. Menü çubuğundaki halat zamanlayıcı ve normal görev menüsü aynı alarm sistemini kullanır.
 
-![GuruTime sarkaçla alarm kurma animasyonu](docs/images/gurutime-sarkac.gif)
+## Diğer ekranlar
 
-### Komut satırı
+| Alarm kurma | Telefon bağlantısı | Ayarlar ve güncelleme |
+| --- | --- | --- |
+| <img src="docs/images/gurutime-alarm.png" alt="GuruTime alarm penceresi" width="280"> | <img src="docs/images/gurutime-baglanti.png" alt="GuruTime telefon bağlantısı" width="280"> | <img src="docs/images/gurutime-ayarlar.png" alt="GuruTime güncelleme ayarları" width="280"> |
 
-Uygulama kurulu ve açıkken terminalden görev ya da alarm ekleyebilirsiniz:
+## Öne çıkanlar
+
+- Görev, alarm, arşiv ve menü çubuğu halat zamanlayıcısı
+- Açılışta ve her 6 saatte bir otomatik sürüm denetimi
+- Yeni sürüm bulunduğunda yerel macOS bildirimi
+- İsteğe bağlı yerel parola kilidi
+- Aynı ağdaki telefondan tek kullanımlık QR kodla kontrol
+- İsteğe bağlı Cloudflare relay ve Web Push desteği
+- Terminal araçları için komut satırı köprüsü
+- Apple Silicon ve Intel Mac'ler için universal paketleme altyapısı
+
+## Güncelleme
+
+GuruTime, GitHub Releases sayfasını ve `main` dalındaki sürüm numarasını otomatik denetler. Daha yeni bir sürüm bulunduğunda macOS bildirimi gösterir; bildirime tıklamak yeni sürümün GitHub sayfasını açar. **Ayarlar → Güncelleme → Şimdi denetle** ile istediğiniz zaman elle de kontrol edebilirsiniz.
+
+Kaynak kurulumunu güncellemek için:
+
+```bash
+git pull && npm ci && npm start
+```
+
+Yayıncı için: `package.json` sürümünü artıran değişiklik `main` dalına gönderildiğinde eski sürümler bunu algılar. İmzalı DMG yayın akışı yapılandırılmışsa uygulama ayrıca doğrulanmış paketi indirip açmaya hazırlar.
+
+## Komut satırı
+
+GuruTime açıkken terminalden görev veya alarm ekleyebilirsiniz:
 
 ```bash
 npm run cli -- note "Sunum notlarını düzenle" --category important
@@ -70,30 +69,23 @@ npm run cli -- alarm "Toplantıya hazırlan" --in 20m
 npm run cli -- list
 ```
 
-Tüm komutları görmek için:
-
-```bash
-npm run cli -- --help
-```
+Tüm komutlar için `npm run cli -- --help` çalıştırın.
 
 ## Telefon bağlantısı
 
-Telefon desteği iki farklı biçimde kullanılabilir:
-
-- **Yerel ağ:** Komutlar yalnızca aynı ağ içindeki Mac'e gider.
+- **Yerel ağ:** Komutlar yalnızca aynı ağdaki Mac'e gider.
 - **Cloudflare relay:** Uçtan uca şifreli komut aktarımı ve ikincil Web Push bildirimi sağlar.
 
-Eşleştirme bağlantıları tek kullanımlıktır ve 10 dakika sonra geçersiz olur. Kurulum ayrıntıları için [Cloudflare relay rehberine](cloud/cloudflare-relay/README.md) bakın.
+Eşleştirme bağlantıları tek kullanımlıdır ve 10 dakika sonra geçersiz olur. Ayrıntılar [Cloudflare relay rehberinde](cloud/cloudflare-relay/README.md) yer alır.
 
-## Gizlilik ve güvenlik
+## Gizlilik
 
-- Görevler ve alarmlar varsayılan olarak Mac'inizde saklanır.
-- Electron pencereleri context isolation, sandbox ve kapalı Node entegrasyonuyla çalışır.
+- Görevler ve alarmlar varsayılan olarak yalnızca Mac'inizde saklanır.
+- Electron pencerelerinde context isolation ve sandbox etkindir; Node entegrasyonu kapalıdır.
 - Yerel parola düz metin tutulmaz; `scrypt` ile türetilmiş kayıt saklanır.
 - QR eşleştirmesi kısa ömürlü ve tek kullanımlıdır.
-- Gizli anahtarlar kaynak koduna eklenmez; yayın sürecinde paket içeriği ayrıca taranır.
 
-Yerel uygulama kilidi, ekrandaki erişimi sınırlar; disk şifrelemesinin yerini almaz. Hassas veriler için macOS FileVault kullanılması önerilir.
+Yerel uygulama kilidi disk şifrelemesinin yerini almaz. Hassas veriler için macOS FileVault kullanılması önerilir.
 
 ## Geliştirme
 
@@ -103,22 +95,8 @@ npm run check
 npm test
 ```
 
-Cloudflare Worker'ını ayrıca doğrulamak için:
-
-```bash
-npm --prefix cloud/cloudflare-relay ci
-npm run cloud:check
-npm run test:cloud
-```
-
-Universal macOS paketi için yayın süreci, imzalama ve noter onayı gerektirir. Ayrıntılar [yayın rehberinde](docs/release/README.md) yer alır.
-
-## Katkıda bulunma
-
-Hata bildirimi, geliştirme önerisi ve pull request'ler memnuniyetle karşılanır. Değişiklik göndermeden önce `npm run check` ve `npm test` komutlarının geçtiğini doğrulayın.
-
-Sürümdeki yenilikler için [değişiklik günlüğüne](CHANGELOG.md), hazır tanıtım metinleri için [Türkçe tanıtım dosyasına](docs/TANITIM.md) bakabilirsiniz.
+Universal macOS paketi imzalama ve noter onayı gerektirir. Yayın ayrıntıları [release rehberinde](docs/release/README.md), sürüm notları [CHANGELOG.md](CHANGELOG.md) dosyasındadır.
 
 ## Lisans
 
-Bu proje [MIT Lisansı](LICENSE) ile sunulur.
+GuruTime [MIT Lisansı](LICENSE) ile sunulur.

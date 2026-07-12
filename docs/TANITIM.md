@@ -1,5 +1,9 @@
 # GuruTime — Türkçe Tanıtım Metinleri
 
+## Sürüm
+
+**GuruTime 1.2.0 — 12 Temmuz 2026**
+
 ## GitHub kısa açıklaması
 
 macOS menü çubuğunda yaşayan, yerel çalışan görev, alarm ve halat zamanlayıcı uygulaması.
@@ -10,7 +14,7 @@ GuruTime, görevlerinizi Mac'inizde tutan ve menü çubuğundan çektiğiniz gö
 
 ## Kısa tanıtım
 
-GuruTime, yapılacaklar listenizi ve alarmlarınızı macOS menü çubuğuna taşır. Görevleri Önemli, Bugün ve Bir Ara kategorilerinde düzenleyebilir, her göreve alarm ekleyebilir veya menü çubuğundaki simgeyi aşağı çekerek doğrudan yeni bir hatırlatıcı oluşturabilirsiniz. Temel özellikler internet bağlantısı olmadan çalışır ve veriler varsayılan olarak Mac'inizde kalır.
+GuruTime 1.2.0, yapılacaklar listenizi ve alarmlarınızı yeni warm-glass arayüzüyle macOS menü çubuğuna taşır. Görevleri Önemli, Bugün ve Bir Ara kategorilerinde düzenleyebilir, her göreve alarm ekleyebilir veya menü çubuğundaki simgeyi aşağı çekerek doğrudan yeni bir hatırlatıcı oluşturabilirsiniz. Temel özellikler internet bağlantısı olmadan çalışır ve veriler varsayılan olarak Mac'inizde kalır.
 
 ## Ayrıntılı tanıtım
 
@@ -24,6 +28,8 @@ Telefon bağlantısı zorunlu değildir. İsteyen kullanıcılar aynı ağdaki b
 
 GuruTime'ın temel görev ve alarm akışı tamamen yerel çalışır. Uygulama Electron güvenlik sınırları, kısıtlı IPC kanalları, `scrypt` tabanlı parola kaydı, kısa ömürlü eşleştirme anahtarları ve yayın öncesi gizli değer taramasıyla güvenli varsayılanlar kullanır.
 
+Sürüm 1.2.0, GitHub Releases ve `main` dalındaki sürüm numarasını açılışta ve her 6 saatte bir denetler. Yeni sürüm bulunduğunda macOS bildirimi gösterir. Kullanıcılar Ayarlar bölümündeki **Şimdi denetle** düğmesiyle kontrolü elle de başlatabilir. Yapılandırılmış imzalı yayın kanalında indirilen DMG ayrıca doğrulanır.
+
 ## Öne çıkan özellikler
 
 - macOS menü çubuğundan hızlı erişim
@@ -36,10 +42,12 @@ GuruTime'ın temel görev ve alarm akışı tamamen yerel çalışır. Uygulama 
 - İsteğe bağlı Cloudflare relay ve Web Push
 - Terminal ve otomasyonlar için CLI köprüsü
 - Apple Silicon ve Intel için universal macOS paketleme
+- GitHub tabanlı yeni sürüm bildirimi ve elle güncelleme denetimi
+- Hareketli SVG ayrıntılarına sahip warm-glass menü arayüzü
 
 ## Sosyal paylaşım metni
 
-GuruTime'ın yeni sürümü hazır: macOS menü çubuğunda yaşayan, tamamen yerel çalışabilen görev ve alarm uygulaması. Menü çubuğundaki simgeyi aşağı çekerek görsel halat üzerinden saniyeler içinde hatırlatıcı kurabilir, görevlerinizi kategorilere ayırabilir ve isterseniz telefonunuzu tek kullanımlık QR ile eşleştirebilirsiniz. Proje açık kaynak ve MIT lisanslıdır.
+GuruTime 1.2.0 hazır: macOS menü çubuğunda yaşayan görev ve alarm uygulaması artık yeni warm-glass arayüze ve otomatik sürüm bildirimine sahip. Menü çubuğundaki simgeyi aşağı çekerek görsel halat üzerinden saniyeler içinde hatırlatıcı kurabilir, görevlerinizi kategorilere ayırabilir ve isterseniz telefonunuzu tek kullanımlık QR ile eşleştirebilirsiniz. Proje açık kaynak ve MIT lisanslıdır.
 
 ## Güvenlik ve gizlilik özeti
 

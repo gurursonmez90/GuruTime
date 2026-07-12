@@ -11,6 +11,7 @@ const INVOKE_CHANNELS = new Set([
   'disable-app-password',
   'get-settings',
   'update-settings',
+  'check-for-update',
   'get-alarm-history',
   'create-pairing-invite',
   'revoke-paired-device',

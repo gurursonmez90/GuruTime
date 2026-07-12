@@ -11,6 +11,7 @@ const state = {
   selectedTaskId: null,
   metricDisplay: null,
   pendingNewTitle: null,
+  updateCheck: null,
 };
 
 const prefersReducedMotion = () =>
@@ -491,6 +492,21 @@ function renderSettings() {
       ['stable', 'Stable'], ['beta', 'Beta'],
     ], settings.updateChannel || 'stable'),
   ]);
+  const updateStatusRow = element('div', 'setting-row');
+  let updateDescription = 'Yeni sürümler açılışta ve her 6 saatte bir GitHub üzerinden denetlenir.';
+  if (state.updateCheck?.status === 'checking') updateDescription = 'Yeni sürüm denetleniyor…';
+  else if (state.updateCheck?.status === 'current') updateDescription = `GuruTime ${state.updateCheck.currentVersion} güncel.`;
+  else if (state.updateCheck?.status === 'available') updateDescription = `GuruTime ${state.updateCheck.version} hazır; macOS bildirimi gönderildi.`;
+  else if (state.updateCheck?.status === 'error') updateDescription = state.updateCheck.message || 'Güncelleme denetlenemedi.';
+  updateStatusRow.append(settingCopy('Otomatik sürüm denetimi', updateDescription));
+  const checkUpdateButton = button(
+    state.updateCheck?.status === 'checking' ? 'Denetleniyor…' : 'Şimdi denetle',
+    'secondary',
+    'check-update',
+  );
+  checkUpdateButton.disabled = state.updateCheck?.status === 'checking';
+  updateStatusRow.append(checkUpdateButton);
+  updateGroup.querySelector('.panel').append(updateStatusRow);
   const downloadsForm = element('form', 'inline-form');
   downloadsForm.id = 'downloadsOriginForm';
   const downloadsLabel = element('label', '', 'İndirme origin');
@@ -507,6 +523,7 @@ function renderSettings() {
   downloadsForm.append(downloadsLabel, downloadsInput, element('p', 'form-hint', 'İmzalı manifest ve immutable DMG sürümleri bu özel R2 alan adından alınır.'), downloadsActions);
   updateGroup.append(downloadsForm);
   fragment.append(updateGroup);
+  fragment.insertBefore(updateGroup, fragment.firstChild.nextSibling);
 
   fragment.append(settingsGroup('Paylaşım', [
     switchSetting('Bağlantıda PIN', 'Kopyalanan eşleştirme bağlantısına rastgele 6 haneli PIN ekler.', 'sharing.linkPinByDefault', settings.sharing?.linkPinByDefault !== false),
@@ -648,6 +665,21 @@ async function saveDownloadsOrigin(event) {
   } catch (error) {
     showToast(errorMessage(error));
   }
+}
+
+async function checkForUpdate() {
+  state.updateCheck = { status: 'checking' };
+  renderSettings();
+  try {
+    state.updateCheck = await ipc.invoke('check-for-update');
+    if (state.updateCheck.status === 'available') showToast(`GuruTime ${state.updateCheck.version} hazır`);
+    else if (state.updateCheck.status === 'current') showToast('GuruTime güncel');
+    else showToast('Güncelleme denetimi sürüyor');
+  } catch (error) {
+    state.updateCheck = { status: 'error', message: errorMessage(error) };
+    showToast(errorMessage(error));
+  }
+  renderSettings();
 }
 
 async function savePassword(event) {
@@ -859,6 +891,7 @@ content.addEventListener('click', async (event) => {
     else if (action === 'pair-link') await createPairing('link');
     else if (action === 'revoke-device') await revokeDevice(id);
     else if (action === 'disable-lock') await disableLock();
+    else if (action === 'check-update') await checkForUpdate();
   } catch (error) {
     showToast(errorMessage(error));
   }

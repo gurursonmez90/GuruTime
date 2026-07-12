@@ -2,6 +2,21 @@
 
 Bu projedeki önemli değişiklikler bu dosyada belgelenir.
 
+## 1.2.0 — 12 Temmuz 2026
+
+### Yeni
+
+- GitHub Releases ve `main` dalındaki sürüm numarasını denetleyen otomatik güncelleme bildirimi
+- Ayarlar ekranında yayın kanalı seçimi ve elle **Şimdi denetle** eylemi
+- Yeni warm-glass görev, bağlantı ve ayarlar arayüzü; hareketli SVG ayrıntıları
+- Menü çubuğu halatının tepsi simgesiyle kesintisiz çalışan yerel bağlantısı
+
+### İyileştirildi
+
+- GitHub sayfasında GIF ilk sıraya alındı, kurulum tek Terminal komutuna indirildi ve ekran görüntüleri yenilendi.
+- İmzalı özel yayın akışı korunurken, indirme origin'i yapılandırılmamış kurulumlara GitHub bildirim geri dönüşü eklendi.
+- Güncelleme bildirimi aynı sürüm için bir uygulama oturumunda yalnızca bir kez gösterilir.
+
 ## 1.1.0 — 10 Temmuz 2026
 
 ### Yeni
