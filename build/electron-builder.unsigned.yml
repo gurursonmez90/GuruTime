@@ -1,0 +1,44 @@
+# Unsigned/ad-hoc build config for GuruTime.
+# Produces a universal DMG WITHOUT Apple Developer ID signing or notarization.
+# The official signed+notarized release path lives in electron-builder.public.yml
+# and is driven by scripts/release/release.mjs. Use that once Apple credentials
+# are configured. Downloads produced here trigger a macOS Gatekeeper warning and
+# require the user to right-click -> Open (or run: xattr -dr com.apple.quarantine).
+appId: com.gurutime.app
+productName: GuruTime
+asar: true
+
+directories:
+  output: dist/unsigned
+  buildResources: assets
+
+files:
+  - package.json
+  - src/**/*
+  - assets/**/*
+  - bin/**/*
+
+mac:
+  category: public.app-category.productivity
+  icon: assets/icon.icns
+  identity: null
+  hardenedRuntime: false
+  gatekeeperAssess: false
+  mergeASARs: true
+  minimumSystemVersion: "12.0"
+  target:
+    - target: dmg
+      arch:
+        - universal
+  extendInfo:
+    LSUIElement: true
+    LSMinimumSystemVersion: "12.0"
+    NSHighResolutionCapable: true
+    NSRequiresAquaSystemAppearance: false
+    NSQuitAlwaysKeepsWindows: false
+
+dmg:
+  artifactName: ${productName}-${version}-universal.${ext}
+  sign: false
+
+publish: null

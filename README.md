@@ -8,7 +8,20 @@ GuruTime, macOS menü çubuğundan birkaç saniyede görev ve alarm oluşturman�
 
 Menü çubuğundaki GuruTime simgesini aşağı çekin. Halat uzadıkça süre artar; bıraktığınızda görev adını yazıp alarmı kurarsınız.
 
-## Kolay kurulum
+## İndir
+
+Hazır uygulamayı indirin — **[GuruTime.dmg (en son sürüm)](https://github.com/gurursonmez90/GuruTime/releases/latest)**
+
+- Apple Silicon ve Intel Mac'ler için tek **universal** paket, macOS 12+.
+- Bu sürümün doğrudan bağlantısı: [`GuruTime-1.2.0-universal.dmg`](https://github.com/gurursonmez90/GuruTime/releases/download/v1.2.0/GuruTime-1.2.0-universal.dmg)
+
+DMG'yi açıp `GuruTime.app`'i `Applications` klasörüne sürükleyin. Uygulama şu an **imzasız/noter onaysız** dağıtıldığından macOS ilk açılışta bir uyarı gösterir. Açmak için `GuruTime.app`'e Finder'da **sağ tık → Aç** deyin (yalnızca ilk seferde) veya Terminal'de şunu çalıştırın:
+
+```bash
+xattr -dr com.apple.quarantine "/Applications/GuruTime.app"
+```
+
+## Kaynaktan kurulum
 
 Gerekenler: **macOS 12+** ve **Node.js 22.12+**.
 
