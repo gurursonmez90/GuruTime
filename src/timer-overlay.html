@@ -8,19 +8,25 @@
   <style>
     :root {
       color-scheme: light dark;
-      --accent: #3f78d8;
-      --surface: rgba(249, 250, 252, 0.96);
-      --surface-solid: #f9fafc;
-      --surface-muted: rgba(20, 24, 32, 0.055);
-      --line: rgba(19, 24, 33, 0.12);
-      --line-strong: rgba(19, 24, 33, 0.22);
-      --ink: #191d25;
-      --ink-soft: #555e6d;
-      --ink-faint: #737c8a;
-      --danger: #b4232f;
-      --focus: #245fae;
-      --radius-panel: 18px;
-      --radius-control: 10px;
+      --accent: #c33f31;
+      --accent-2: #4f9d92;
+      --accent-grad: linear-gradient(135deg, #c33f31 0%, #d4674a 46%, #4f9d92 100%);
+      --glow: rgba(195, 63, 49, 0.40);
+      --aurora-1: rgba(196, 66, 52, 0.28);
+      --aurora-2: rgba(202, 108, 64, 0.24);
+      --aurora-3: rgba(84, 148, 138, 0.22);
+      --surface: rgba(255, 250, 246, 0.56);
+      --surface-solid: #fbf4ec;
+      --surface-muted: rgba(255, 250, 246, 0.42);
+      --line: rgba(36, 22, 24, 0.12);
+      --line-strong: rgba(36, 22, 24, 0.21);
+      --ink: #18161d;
+      --ink-soft: #575360;
+      --ink-faint: #857f8e;
+      --danger: #b62f2a;
+      --focus: #c33f31;
+      --radius-panel: 20px;
+      --radius-control: 12px;
     }
 
     * {
@@ -85,12 +91,18 @@
       justify-items: center;
       gap: 3px;
       overflow: hidden;
-      border: 1px solid rgba(255, 255, 255, 0.14);
-      border-radius: 16px;
-      background: rgba(25, 29, 37, 0.97);
+      border: 1px solid rgba(255, 255, 255, 0.16);
+      border-radius: 18px;
+      background:
+        radial-gradient(120% 100% at 0% 0%, rgba(228, 84, 62, 0.52), transparent 60%),
+        radial-gradient(120% 120% at 100% 100%, rgba(92, 192, 178, 0.34), transparent 60%),
+        rgba(32, 19, 14, 0.95);
+      -webkit-backdrop-filter: blur(14px) saturate(150%);
+      backdrop-filter: blur(14px) saturate(150%);
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.12),
-        0 13px 30px rgba(10, 14, 22, 0.24);
+        inset 0 1px 0 rgba(255, 255, 255, 0.16),
+        0 16px 36px rgba(20, 12, 50, 0.4),
+        0 0 24px -6px var(--glow);
       color: #f5f7fb;
       opacity: 0;
       pointer-events: none;
@@ -105,8 +117,8 @@
       position: absolute;
       inset: 0 0 auto;
       height: 4px;
-      background: var(--accent);
-      box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.24);
+      background: var(--accent-grad);
+      box-shadow: inset 0 -1px 0 rgba(255, 255, 255, 0.28), 0 0 12px 0 var(--glow);
     }
 
     .time-capsule.is-visible {
@@ -139,17 +151,31 @@
       width: 320px;
       max-width: calc(100vw - 24px);
       overflow: hidden;
-      border: 1px solid var(--line);
+      isolation: isolate;
+      border: 1px solid var(--line-strong);
       border-radius: var(--radius-panel);
       background: var(--surface);
-      -webkit-backdrop-filter: blur(24px) saturate(145%);
-      backdrop-filter: blur(24px) saturate(145%);
+      -webkit-backdrop-filter: blur(28px) saturate(175%);
+      backdrop-filter: blur(28px) saturate(175%);
       box-shadow:
-        inset 0 1px 0 rgba(255, 255, 255, 0.65),
-        0 18px 48px rgba(28, 35, 47, 0.22);
+        inset 0 1px 0 rgba(255, 255, 255, 0.5),
+        0 24px 60px rgba(28, 20, 60, 0.3);
       opacity: 1;
       transform: translateY(0) scale(1);
       transition: opacity 150ms ease, transform 190ms cubic-bezier(0.16, 1, 0.3, 1);
+    }
+
+    .confirmation::after {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      z-index: 0;
+      background:
+        radial-gradient(36% 40% at 18% 16%, var(--aurora-1), transparent 62%),
+        radial-gradient(40% 42% at 90% 22%, var(--aurora-2), transparent 62%),
+        radial-gradient(46% 48% at 78% 94%, var(--aurora-3), transparent 62%);
+      filter: blur(20px);
+      pointer-events: none;
     }
 
     .confirmation.is-measuring {
@@ -159,6 +185,8 @@
     }
 
     .confirmation-inner {
+      position: relative;
+      z-index: 1;
       display: grid;
       gap: 16px;
       padding: 20px;
@@ -258,9 +286,9 @@
     }
 
     .category-button[aria-pressed="true"] {
-      border-color: var(--accent);
-      background: color-mix(in srgb, var(--accent) 13%, transparent);
-      box-shadow: inset 0 -3px 0 var(--accent);
+      border-color: color-mix(in srgb, var(--accent) 55%, transparent);
+      background: linear-gradient(135deg, rgba(195, 63, 49, 0.16), rgba(79, 157, 146, 0.16));
+      box-shadow: inset 0 -3px 0 0 var(--accent), 0 6px 18px -8px var(--glow);
       color: var(--ink);
     }
 
@@ -313,52 +341,56 @@
     }
 
     .action-button.primary {
-      border-color: rgba(255, 255, 255, 0.08);
-      background: var(--ink);
-      box-shadow: inset 0 3px 0 var(--accent);
-      color: #f7f8fb;
+      border-color: transparent;
+      background: var(--accent-grad);
+      background-size: 160% 160%;
+      box-shadow: 0 12px 26px -10px var(--glow), inset 0 1px 0 rgba(255, 255, 255, 0.4);
+      color: #fff;
     }
 
     .action-button.primary:hover {
-      background: #282e39;
+      background-position: 100% 50%;
+      box-shadow: 0 16px 32px -10px var(--glow), inset 0 1px 0 rgba(255, 255, 255, 0.45);
+      transform: translateY(-1px);
     }
 
     @media (prefers-color-scheme: dark) {
       :root {
-        --surface: rgba(30, 34, 42, 0.96);
-        --surface-solid: #1e222a;
-        --surface-muted: rgba(255, 255, 255, 0.07);
-        --line: rgba(255, 255, 255, 0.12);
-        --line-strong: rgba(255, 255, 255, 0.22);
-        --ink: #f1f3f6;
-        --ink-soft: #b8bfca;
-        --ink-faint: #969eaa;
-        --danger: #ff959d;
-        --focus: #8bb4ef;
+        --accent: #ec6b52;
+        --accent-2: #5cc0b2;
+        --accent-grad: linear-gradient(135deg, #ec6b52 0%, #e88a63 46%, #5cc0b2 100%);
+        --glow: rgba(236, 107, 82, 0.50);
+        --aurora-1: rgba(226, 88, 66, 0.40);
+        --aurora-2: rgba(216, 126, 74, 0.28);
+        --aurora-3: rgba(88, 168, 156, 0.28);
+        --surface: rgba(52, 40, 34, 0.5);
+        --surface-solid: #251a14;
+        --surface-muted: rgba(255, 238, 224, 0.06);
+        --line: rgba(255, 232, 224, 0.11);
+        --line-strong: rgba(255, 232, 224, 0.22);
+        --ink: #f6f5fb;
+        --ink-soft: #c4c0cc;
+        --ink-faint: #948f9e;
+        --danger: #f2887a;
+        --focus: #f27e67;
       }
 
       .confirmation {
         box-shadow:
-          inset 0 1px 0 rgba(255, 255, 255, 0.1),
-          0 20px 52px rgba(5, 8, 13, 0.4);
+          inset 0 1px 0 rgba(255, 255, 255, 0.12),
+          0 24px 60px rgba(0, 0, 0, 0.55);
       }
 
       .task-input {
-        background: rgba(7, 10, 15, 0.28);
+        background: rgba(7, 10, 15, 0.3);
       }
 
       .task-input:hover {
-        background: rgba(7, 10, 15, 0.4);
+        background: rgba(7, 10, 15, 0.42);
       }
 
       .action-button.primary {
-        background: #f1f3f6;
-        border-color: rgba(0, 0, 0, 0.1);
-        color: #181c23;
-      }
-
-      .action-button.primary:hover {
-        background: #dfe3e9;
+        color: #0c0d18;
       }
     }
 
@@ -376,6 +408,14 @@
     @media (prefers-reduced-transparency: reduce) {
       .confirmation {
         background: var(--surface-solid);
+        -webkit-backdrop-filter: none;
+        backdrop-filter: none;
+      }
+
+      .confirmation::after { display: none; }
+
+      .time-capsule {
+        background: rgba(32, 19, 14, 0.99);
         -webkit-backdrop-filter: none;
         backdrop-filter: none;
       }
