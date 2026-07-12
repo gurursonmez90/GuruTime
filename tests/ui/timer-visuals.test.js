@@ -138,4 +138,8 @@ test('timer overlay uses a non-activating macOS panel', () => {
 
   assert.match(source, /type:\s*process\.platform === 'darwin' \? 'panel' : undefined/);
   assert.match(source, /showInactive\(\)/);
+  assert.ok(
+    source.indexOf('timerOverlay.showInactive();') < source.indexOf('const actualOverlayBounds = timerOverlay.getBounds();'),
+    'the panel must be shown before measuring its macOS-clamped bounds',
+  );
 });

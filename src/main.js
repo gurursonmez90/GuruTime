@@ -27,9 +27,10 @@ const {
 } = require('./lib/app-state-v2');
 const { LocalAuth } = require('./lib/local-auth');
 const { LocalControlServer } = require('./lib/local-control-server');
+const { createMenuBarRopeController } = require('./lib/menu-bar-rope');
 const { SettingsStore } = require('./lib/settings-store');
 const { SignedUpdateClient } = require('./lib/update-client');
-const { computeTimerOverlayBounds } = require('./lib/window-geometry');
+const { computeTimerOverlayBounds, computeVisibleRopeAnchor } = require('./lib/window-geometry');
 
 let CloudRelayClient = null;
 try {
@@ -68,6 +69,7 @@ if (!hasSingleInstanceLock) {
   let tray = null;
   let mainWindow = null;
   let timerOverlay = null;
+  const menuBarRope = createMenuBarRopeController();
   let alarmWindow = null;
   let appState = null;
   let auth = null;
@@ -288,22 +290,35 @@ if (!hasSingleInstanceLock) {
     timerOverlay.loadFile(path.join(__dirname, 'timer-overlay.html'));
     timerOverlay.webContents.once('did-finish-load', () => {
       if (!timerOverlay || timerOverlay.isDestroyed()) return;
-      timerOverlay.webContents.send('init-anchor', {
-        x: overlayBounds.anchorX,
-        y: overlayBounds.anchorY,
-      });
+      // macOS clamps a hidden panel to the work area only when it is shown.
+      // Measure after showing it so the rope starts at the panel's real top
+      // edge instead of adding the menu-bar height a second time.
       timerOverlay.showInactive();
+      const actualOverlayBounds = timerOverlay.getBounds();
+      const actualTrayBounds = tray.getBounds();
+      const anchor = computeVisibleRopeAnchor({
+        trayBounds: actualTrayBounds,
+        overlayBounds: actualOverlayBounds,
+        workArea: display.workArea,
+        topClearance: OVERLAY_TOP_CLEARANCE,
+      });
+      timerOverlay.webContents.send('init-anchor', {
+        x: anchor.x,
+        y: anchor.y,
+      });
       startCursorTracking();
     });
     timerOverlay.on('closed', () => {
       timerOverlay = null;
       pendingTimerSelection = null;
+      menuBarRope.hide();
       stopCursorTracking();
     });
   }
 
   function destroyTimerOverlay() {
     pendingTimerSelection = null;
+    menuBarRope.hide();
     if (timerOverlay && !timerOverlay.isDestroyed()) timerOverlay.destroy();
     timerOverlay = null;
   }
@@ -326,7 +341,15 @@ if (!hasSingleInstanceLock) {
     dragging = true;
     selectedMinutes = 0;
     const trayBounds = tray.getBounds();
+    const display = screen.getDisplayNearestPoint({ x: trayBounds.x, y: trayBounds.y });
     trayOriginY = trayBounds.y + trayBounds.height;
+    menuBarRope.show({
+      trayBounds,
+      displayBounds: display.bounds,
+      workArea: display.workArea,
+      primaryDisplayBounds: screen.getPrimaryDisplay().bounds,
+      fireAt: Date.now(),
+    });
     configureTimerOverlay();
   }
 
@@ -1269,6 +1292,7 @@ if (!hasSingleInstanceLock) {
 
   app.on('before-quit', () => {
     quitting = true;
+    menuBarRope.hide();
     stopCursorTracking();
     stopAlarmCadence();
     clearScheduledAlarmTimers();
