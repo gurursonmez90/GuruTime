@@ -58,6 +58,8 @@ GuruTime menü çubuğuna eklenir. Uygulama simgesine tıklayarak görev pencere
 
 Menü çubuğundaki GuruTime simgesini aşağı doğru çekin. Halat uzadıkça seçilen süre artar; bıraktığınız noktada görev adını ve kategoriyi girerek alarmı oluşturabilirsiniz. Overlay macOS çalışma alanının dışına taşmaz, menü çubuğunu kapatmaz ve halat simgenin hemen altından kesintisiz başlar.
 
+![GuruTime sarkaçla alarm kurma animasyonu](docs/images/gurutime-sarkac.gif)
+
 ### Komut satırı
 
 Uygulama kurulu ve açıkken terminalden görev ya da alarm ekleyebilirsiniz:
