@@ -27,9 +27,10 @@ const {
 } = require('./lib/app-state-v2');
 const { LocalAuth } = require('./lib/local-auth');
 const { LocalControlServer } = require('./lib/local-control-server');
+const { createMenuBarRopeController } = require('./lib/menu-bar-rope');
 const { SettingsStore } = require('./lib/settings-store');
-const { SignedUpdateClient } = require('./lib/update-client');
-const { computeTimerOverlayBounds } = require('./lib/window-geometry');
+const { GitHubUpdateClient, SignedUpdateClient } = require('./lib/update-client');
+const { computeTimerOverlayBounds, computeVisibleRopeAnchor } = require('./lib/window-geometry');
 
 let CloudRelayClient = null;
 try {
@@ -68,6 +69,7 @@ if (!hasSingleInstanceLock) {
   let tray = null;
   let mainWindow = null;
   let timerOverlay = null;
+  const menuBarRope = createMenuBarRopeController();
   let alarmWindow = null;
   let appState = null;
   let auth = null;
@@ -76,7 +78,9 @@ if (!hasSingleInstanceLock) {
   let localServer = null;
   let cloudClient = null;
   let updateCheckTimer = null;
+  let updateCheckStartupTimer = null;
   let updateCheckBusy = false;
+  let lastNotifiedUpdateVersion = '';
   let remoteInfo = { enabled: false, port: 0, urls: [], primaryUrl: '', devices: [] };
   let cloudInfo = { enabled: false, enrolled: false, connected: false, devices: [], lastError: '' };
   let quitting = false;
@@ -288,22 +292,35 @@ if (!hasSingleInstanceLock) {
     timerOverlay.loadFile(path.join(__dirname, 'timer-overlay.html'));
     timerOverlay.webContents.once('did-finish-load', () => {
       if (!timerOverlay || timerOverlay.isDestroyed()) return;
-      timerOverlay.webContents.send('init-anchor', {
-        x: overlayBounds.anchorX,
-        y: overlayBounds.anchorY,
-      });
+      // macOS clamps a hidden panel to the work area only when it is shown.
+      // Measure after showing it so the rope starts at the panel's real top
+      // edge instead of adding the menu-bar height a second time.
       timerOverlay.showInactive();
+      const actualOverlayBounds = timerOverlay.getBounds();
+      const actualTrayBounds = tray.getBounds();
+      const anchor = computeVisibleRopeAnchor({
+        trayBounds: actualTrayBounds,
+        overlayBounds: actualOverlayBounds,
+        workArea: display.workArea,
+        topClearance: OVERLAY_TOP_CLEARANCE,
+      });
+      timerOverlay.webContents.send('init-anchor', {
+        x: anchor.x,
+        y: anchor.y,
+      });
       startCursorTracking();
     });
     timerOverlay.on('closed', () => {
       timerOverlay = null;
       pendingTimerSelection = null;
+      menuBarRope.hide();
       stopCursorTracking();
     });
   }
 
   function destroyTimerOverlay() {
     pendingTimerSelection = null;
+    menuBarRope.hide();
     if (timerOverlay && !timerOverlay.isDestroyed()) timerOverlay.destroy();
     timerOverlay = null;
   }
@@ -326,7 +343,15 @@ if (!hasSingleInstanceLock) {
     dragging = true;
     selectedMinutes = 0;
     const trayBounds = tray.getBounds();
+    const display = screen.getDisplayNearestPoint({ x: trayBounds.x, y: trayBounds.y });
     trayOriginY = trayBounds.y + trayBounds.height;
+    menuBarRope.show({
+      trayBounds,
+      displayBounds: display.bounds,
+      workArea: display.workArea,
+      primaryDisplayBounds: screen.getPrimaryDisplay().bounds,
+      fireAt: Date.now(),
+    });
     configureTimerOverlay();
   }
 
@@ -718,35 +743,79 @@ if (!hasSingleInstanceLock) {
     }
   }
 
-  async function checkForSignedUpdate() {
-    if (!app.isPackaged || updateCheckBusy || !settings.downloadsOrigin) return;
-    const publicKeyPath = path.join(__dirname, 'update-public-key.pem');
-    if (!fs.existsSync(publicKeyPath)) {
-      logError('İmzalı güncelleme anahtarı pakette bulunamadı; otomatik kontrol kapalı.');
-      return;
-    }
+  function showUpdateNotification({ version, body, onClick }) {
+    if (lastNotifiedUpdateVersion === version || !Notification.isSupported()) return;
+    lastNotifiedUpdateVersion = version;
+    const notification = new Notification({
+      title: `GuruTime ${version} hazır`,
+      body,
+      silent: true,
+    });
+    notification.on('click', onClick);
+    notification.show();
+  }
+
+  async function checkForUpdates({ manual = false } = {}) {
+    if (updateCheckBusy) return { status: 'busy', currentVersion: app.getVersion() };
     updateCheckBusy = true;
+    let signedError = null;
     try {
-      const client = new SignedUpdateClient({
-        origin: settings.downloadsOrigin,
+      if (app.isPackaged && settings.downloadsOrigin) {
+        const publicKeyPath = path.join(__dirname, 'update-public-key.pem');
+        if (!fs.existsSync(publicKeyPath)) {
+          signedError = new Error('İmzalı güncelleme anahtarı pakette bulunamadı.');
+        } else {
+          try {
+            const client = new SignedUpdateClient({
+              origin: settings.downloadsOrigin,
+              channel: settings.updateChannel,
+              currentVersion: app.getVersion(),
+              publicKeyPath,
+            });
+            const available = await client.check();
+            if (available.available) {
+              const destination = path.join(app.getPath('temp'), 'gurutime-updates', available.version);
+              const dmgPath = await client.download(available.artifact, destination);
+              showUpdateNotification({
+                version: available.version,
+                body: 'İmzalı ve doğrulanmış güncellemeyi açmak için tıklayın.',
+                onClick: () => void shell.openPath(dmgPath),
+              });
+              return { status: 'available', version: available.version, kind: 'signed', currentVersion: app.getVersion() };
+            }
+          } catch (error) {
+            signedError = error;
+            logError('İmzalı güncelleme kontrolü başarısız', error);
+          }
+        }
+      }
+
+      const github = new GitHubUpdateClient({
         channel: settings.updateChannel,
         currentVersion: app.getVersion(),
-        publicKeyPath,
       });
-      const available = await client.check();
-      if (!available.available) return;
-      const destination = path.join(app.getPath('temp'), 'gurutime-updates', available.version);
-      const dmgPath = await client.download(available.artifact, destination);
-      if (!Notification.isSupported()) return;
-      const notification = new Notification({
-        title: `GuruTime ${available.version} hazır`,
-        body: 'İmzalı ve doğrulanmış güncellemeyi açmak için tıklayın.',
-        silent: true,
+      const available = await github.check();
+      if (!available.available) {
+        return { status: 'current', version: available.version, currentVersion: app.getVersion() };
+      }
+      showUpdateNotification({
+        version: available.version,
+        body: available.kind === 'release'
+          ? 'Yeni sürümü GitHub’da açmak için tıklayın.'
+          : 'Yeni kaynak sürümünü ve kurulum adımlarını açmak için tıklayın.',
+        onClick: () => void shell.openExternal(available.url),
       });
-      notification.on('click', () => void shell.openPath(dmgPath));
-      notification.show();
+      return {
+        status: 'available',
+        version: available.version,
+        kind: available.kind,
+        url: available.url,
+        currentVersion: app.getVersion(),
+      };
     } catch (error) {
-      logError('İmzalı güncelleme kontrolü başarısız', error);
+      logError('GitHub güncelleme kontrolü başarısız', error);
+      if (manual) throw new Error(signedError?.message || error.message);
+      return { status: 'error', currentVersion: app.getVersion() };
     } finally {
       updateCheckBusy = false;
     }
@@ -754,10 +823,13 @@ if (!hasSingleInstanceLock) {
 
   function scheduleUpdateChecks() {
     clearInterval(updateCheckTimer);
+    clearTimeout(updateCheckStartupTimer);
     updateCheckTimer = null;
-    if (!app.isPackaged || !settings.downloadsOrigin) return;
-    setTimeout(() => void checkForSignedUpdate(), 45000);
-    updateCheckTimer = setInterval(() => void checkForSignedUpdate(), 6 * 60 * 60 * 1000);
+    updateCheckStartupTimer = setTimeout(() => {
+      updateCheckStartupTimer = null;
+      void checkForUpdates();
+    }, 45000);
+    updateCheckTimer = setInterval(() => void checkForUpdates(), 6 * 60 * 60 * 1000);
   }
 
   async function applyLocalServerSetting() {
@@ -968,6 +1040,11 @@ if (!hasSingleInstanceLock) {
       requireMainSender(event);
       requireUnlocked();
       return settingsStore.get();
+    });
+    ipcMain.handle('check-for-update', async (event) => {
+      requireMainSender(event);
+      requireUnlocked();
+      return checkForUpdates({ manual: true });
     });
     ipcMain.handle('update-settings', async (event, patch) => {
       requireMainSender(event);
@@ -1269,11 +1346,13 @@ if (!hasSingleInstanceLock) {
 
   app.on('before-quit', () => {
     quitting = true;
+    menuBarRope.hide();
     stopCursorTracking();
     stopAlarmCadence();
     clearScheduledAlarmTimers();
     clearInterval(trayStatusTimer);
     clearInterval(updateCheckTimer);
+    clearTimeout(updateCheckStartupTimer);
     clearTimeout(holdTimer);
     clearTimeout(hermesScanTimer);
     for (const timer of followupTimers.values()) clearTimeout(timer);

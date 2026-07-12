@@ -1,6 +1,6 @@
 {
   "name": "gurutime",
-  "version": "1.1.0",
+  "version": "1.2.0",
   "description": "Local-first task and alarm timer for the macOS menu bar",
   "author": "Gurur Sonmez",
   "license": "MIT",
